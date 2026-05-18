@@ -16,7 +16,25 @@ Built on [libretro](https://www.libretro.com/) - in theory any core that runs in
 
 The known hard limits are **Dolphin has visual artifacts; gameplay otherwise functional**, **Vulkan-only cores don't work** (skipped at scan time), and **core-side threaded-renderer modes** (e.g. `mupen64plus-ThreadedRenderer=True`) may still crash the loaded core. 
 
-## Be really careful **UNINSTALLING** this mod: When you uninstall from r2modman or Thunderstore Mod manager, your ENTIRE emulator set-up will be deleted. 
+## HEADS UP v0.9.1 - DATA HAS MOVED. Read this before upgrading from v0.9.0.
+
+In v0.9.0, all your data (ROMs, BIOS, saves, save states, core DLLs, keymap customizations) lived inside the mod folder. **r2modman deletes the mod folder before installing a new version**, so updating wiped that data. v0.9.1 fixes this by moving all user data to a permanent location outside the mod folder.
+
+**New location for all user data:**
+
+```
+%LOCALAPPDATA%\VEmu\ e.g. C:\Users\moddy\AppData\Local\VEmu
+```
+
+(Paste that into Explorer's address bar to open it.) Subfolders `cores\`, `roms\`, `system\`, `saves\`, `keymaps\` are auto-created on first launch.
+
+**If you updated to v0.9.0 → v0.9.1 and have a backup from before the wipe:** copy your old `cores\`, `roms\`, `system\`, `saves\`, and `keymaps\` folders into `%LOCALAPPDATA%\VEmu\` and re-launch.
+
+**If you didn't back up:** there's no recovery for v0.9.0-wiped data. Sorry, it happened to me too.
+
+**`settings.ini` still lives in the mod folder** so the r2modman config UI can see it, which means it resets on each update. 
+
+**Uninstalling the mod no longer deletes user data.** `%LOCALAPPDATA%\VEmu\` survives r2modman uninstalls, profile resets, and profile re-imports. To fully purge, delete that folder manually.
 
 ---
 
@@ -28,16 +46,18 @@ The known hard limits are **Dolphin has visual artifacts; gameplay otherwise fun
 
 1. **Install the mod** through r2modmanager.
 
-2. **Drop a core DLL into `cores/`.** Cores are emulator backends - one per system you want to play. Grab them from the libretro buildbot:
+2. **Launch VotV once** so the mod creates `%LOCALAPPDATA%\VEmu\` and its subfolders. Paste `%LOCALAPPDATA%\VEmu` into Explorer's address bar to open it. All ROMs / cores / BIOS / saves live here. (Pre-v0.9.1: these lived in the mod folder. Don't use that path anymore - it gets wiped on update.)
+
+3. **Drop a core DLL into `%LOCALAPPDATA%\VEmu\cores\`.** Cores are emulator backends - one per system you want to play. Grab them from the libretro buildbot:
    > https://buildbot.libretro.com/nightly/windows/x86_64/latest/
 
    For example, drop `snes9x_libretro.dll` to play SNES games.
 
-3. **Drop a ROM under `roms/`.** Just put `super_mario_world.sfc` directly in `roms/` and the mod figures out the system from the extension. (For zips and more advanced layouts, see [ROMs](#roms).)
+4. **Drop a ROM under `%LOCALAPPDATA%\VEmu\roms\`.** Just put `super_mario_world.sfc` directly in `roms\` and the mod figures out the system from the extension. (For zips and more advanced layouts, see [ROMs](#roms).)
 
-4. *(Optional)* **If the core needs a BIOS, drop it into `system/`.** Check `system/required_bios.txt` after the first launch to see what's needed. 
+5. *(Optional)* **If the core needs a BIOS, drop it into `%LOCALAPPDATA%\VEmu\system\`.** Check `system\required_bios.txt` after the first launch to see what's needed. 
 
-5. **Launch VotV.**:
+6. **Launch VotV.**:
     - Props are located under the Store -> Essentials -> Electronics
     - Purchase the **GameToy** (handheld) or **SGES home console** from the store.
     - Purchase the **Cartridge Dispenser**.
@@ -95,24 +115,38 @@ Code in this mod is either written by me or used under permissive open-source li
 
 </p>
 
-After install, the mod lives here (replace `<user>` and `<profile>` with yours):
+Starting in v0.9.1 the mod uses **two** folders. The split exists because r2modman deletes the mod folder during updates -- so user data lives outside it.
+
+### 1. Mod folder (shipped binaries - wiped on update, do not edit)
+
+`C:\Users\<user>\AppData\Roaming\r2modmanPlus-local\VotV\profiles\<profile>\shimloader\mod\Moddy-VEmu\dlls\`
 
 ```
-C:\Users\<user>\AppData\Roaming\r2modmanPlus-local\VotV\profiles\<profile>\shimloader\mod\Moddy-VEmu\dlls\
-│
-├── main.dll              ← the mod itself
-├── settings.ini          ← auto-generated on first run 
+├── main.dll                       ← the mod itself
+├── libretrocpp_corehost.exe       ← the per-core child process host
+├── settings.ini                   ← auto-generated on first run; resets on each update
+├── cores\info\                    ← shipped .info metadata files (~298 files, refreshed each release)
+└── keymaps\_reference.txt         ← shipped reference doc for the keymap format
+```
+
+### 2. User data folder (your stuff - survives updates, profile resets, uninstalls)
+
+`%LOCALAPPDATA%\VEmu\` - paste that into Explorer's address bar.
+
+```
 ├── cores\                ← drop your core DLLs here
-│   └── info\             ← .info files (ships with the mod, can be updated from libretro buildbot)
+│   └── info\             ← (optional) drop newer .info files here to override shipped ones
 ├── roms\                 ← drop your ROMs here (see ROMs section for layouts)
 │   └── <system>\         ← one auto-created per installed core (snes/, nes/, nintendo_64/, ...)
 ├── system\               ← drop BIOS files here (only if a core needs one)
-│   └── required_bios.txt ← auto-generated each scan; lists what's needed / present
+│   └── REQUIRED_BIOS.txt ← auto-generated each scan; lists what's needed / present
 ├── saves\                ← SRAM, save states, and core options (auto-created)
 │   ├── <system>\         ← per-system subdir: <rom_id>.srm, .state<N>, .state<N>.png, .opt
 │   ├── <core>.opt        ← per-core libretro option overrides
+│   ├── .procedural_covers\  ← auto-generated cover art cache
 │   └── corrupted\        ← corrupted ROMs land here
-├── keymaps\              ← per-system keybind INIs (ships with some defaults)
+├── keymaps\              ← per-system keybind INIs (auto-generated on first cart load - edit freely)
+│   ├── _global.ini       ← frontend hotkey bindings (auto-generated, edit freely)
 │   └── _descriptors\     ← auto-generated per-cart input descriptors (reference only)
 └── .core_cache\          ← per-instance core copies (auto-managed)
 ```
@@ -137,7 +171,7 @@ C:\Users\<user>\AppData\Roaming\r2modmanPlus-local\VotV\profiles\<profile>\shiml
 
    > (Or download them all: https://buildbot.libretro.com/nightly/windows/x86_64/RetroArch_cores.7z)
 
-2. Drop the `.dll` into `<modDir>/cores/`.
+2. Drop the `.dll` into `%LOCALAPPDATA%\VEmu\cores\`.
 
 For the full list of available cores and what systems they emulate, see the libretro core list:
 
@@ -175,7 +209,7 @@ I've confirmed these work. Anything *not* on this list isn't unsupported; it jus
 
 </p>
 
-Some emulator cores need a **BIOS file** (the firmware from the original console) to run games. These go in `<modDir>/system/`.
+Some emulator cores need a **BIOS file** (the firmware from the original console) to run games. These go in `%LOCALAPPDATA%\VEmu\system\`.
 
 ### Do I need one?
 
@@ -203,7 +237,7 @@ Every time the mod scans the manifest, it writes a fresh `required_bios.txt` int
 
 1. **Legally acquire the file.** VEmu will never ship any BIOS files.
 2. **Use the exact filename** the core expects. Filenames are case-sensitive on some systems and the core won't search for variants. Either copy the name straight out of `required_bios.txt`, or check the core's libretro docs page.
-3. **Drop it directly into `<modDir>/system/`** - no subfolders (unless the core specifies one, e.g. `Mupen64plus/IPL.n64`).
+3. **Drop it directly into `%LOCALAPPDATA%\VEmu\system\`** - no subfolders (unless the core specifies one, e.g. `Mupen64plus/IPL.n64`).
 4. **Restart the game.** Cores read the BIOS once at load time. Requires full reload.
 
 ---
@@ -251,7 +285,7 @@ roms\
 Recognized folder names:
 
 - **Short aliases (5)**: `snes`, `nes`, `gb`, `gbc`, `gba` - friendly shortcuts that map to the libretro database name.
-- **Anything else**: the `systemid` from a core's `.info` file - e.g. `nintendo_64`, `playstation`, `playstation_portable`, `nintendo_gamecube`, `nintendo_ds`, `sega_genesis`. Check the systemid line in `<modDir>\cores\info\<core>_libretro.info` if you're unsure.
+- **Anything else**: the `systemid` from a core's `.info` file - e.g. `nintendo_64`, `playstation`, `playstation_portable`, `nintendo_gamecube`, `nintendo_ds`, `sega_genesis`. Check the systemid line in the mod folder's `cores\info\<core>_libretro.info` (shipped metadata) if you're unsure.
 
 **You don't have to create these yourself.** On every scan, the mod auto-creates an empty `roms/<system>/` for each installed core (alias name where one exists, otherwise the systemid). So dropping `snes9x_libretro.dll` into `cores/` and re-launching is enough to make `roms/snes/` appear.
 
@@ -488,22 +522,22 @@ If a button or axis is missing from this file, the core didn't advertise it (usu
 
 </p>
 
-Everything lives under `<modDir>\saves\<system>\`:
+Everything lives under `%LOCALAPPDATA%\VEmu\saves\<system>\`:
 
 | File | What |
 |---|---|
 | `<rom_id>.srm` | Battery save (SRAM). Flushed every 30 s while the cart is loaded; tunable via `[SRAM] flush_interval_sec` in `settings.ini`. |
 | `<rom_id>.state<N>` | Save state slot `N` (0-9). A toast appears when one is written. |
 | `<rom_id>.state<N>.png` | Thumbnail PNG of the framebuffer at the moment of save - written automatically next to the state file. Useful when picking a slot to load. |
-| `<rom_id>.opt` | *(optional)* Per-game libretro core options. Overlays whatever's in `<modDir>\saves\<core>.opt`. See [Per-game core options](#per-game-core-options). |
+| `<rom_id>.opt` | *(optional)* Per-game libretro core options. Overlays whatever's in `%LOCALAPPDATA%\VEmu\saves\<core>.opt`. See [Per-game core options](#per-game-core-options). |
 
 All of these follow you across hold/drop cycles and across game sessions. Pull the cart, save it for later, come back next session, it'll pick up where you left off. To wipe a save: delete the file. To back up: copy the `saves\` folder.
 
 ### Per-game core options
 
-Libretro cores expose their own option grids (renderer, region, internal resolution, etc.) - these are advertised to the frontend at game-load time. VEmu writes the live values to `<modDir>\saves\<core>.opt` whenever the core asks. You can also hand-edit that file.
+Libretro cores expose their own option grids (renderer, region, internal resolution, etc.) - these are advertised to the frontend at game-load time. VEmu writes the live values to `%LOCALAPPDATA%\VEmu\saves\<core>.opt` whenever the core asks. You can also hand-edit that file.
 
-For per-game overrides (e.g. force a specific renderer for one game), drop a file at `<modDir>\saves\<system>\<rom_id>.opt` with the keys you want to override - same `key = value` format. Loaded *on top of* the per-core file, so you only need to list the keys you're changing.
+For per-game overrides (e.g. force a specific renderer for one game), drop a file at `%LOCALAPPDATA%\VEmu\saves\<system>\<rom_id>.opt` with the keys you want to override - same `key = value` format. Loaded *on top of* the per-core file, so you only need to list the keys you're changing.
 
 For what keys each core exposes, see that core's libretro docs page under "Core options".
 
@@ -515,11 +549,13 @@ For what keys each core exposes, see that core's libretro docs page under "Core 
 
 </p>
 
-Install-wide preferences live in **`settings.ini`** at the mod root. This is the "frontend config" tier - like RetroArch's `retroarch.cfg`.
+Install-wide preferences live in **`settings.ini`** in the mod folder (next to `main.dll`). This is the "frontend config" tier - like RetroArch's `retroarch.cfg`. r2modman's config UI can read/write it from this location.
 
 ### Auto-generated on first run
 
-You don't have to create or copy anything.  **No** `settings.ini` and **no** `settings.example.ini` is included - the first time you launch with the mod loaded and no `settings.ini` is present, it makes a fresh template into `<modDir>/settings.ini`.
+You don't have to create or copy anything.  **No** `settings.ini` and **no** `settings.example.ini` is included - the first time you launch with the mod loaded and no `settings.ini` is present, it makes a fresh template right next to `main.dll`.
+
+**Heads up:** `settings.ini` resets on every mod update (because r2modman wipes the mod folder during update). If you've customized it heavily, copy it somewhere safe before clicking Update. Only your *preferences* live in this file - ROMs / saves / BIOS / keymaps are in `%LOCALAPPDATA%\VEmu\` and survive updates.
 
 To customize: open `settings.ini`, uncomment the lines you want, edit values, save. Changes take effect on the next cart eject + reinsert (with three exceptions called out under [Reload behavior](#reload-behavior)).
 
