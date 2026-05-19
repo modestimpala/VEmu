@@ -16,6 +16,8 @@ Built on [libretro](https://www.libretro.com/) - in theory any core that runs in
 
 The known hard limits are **Dolphin has visual artifacts; gameplay otherwise functional**, **Vulkan-only cores don't work** (skipped at scan time), and **core-side threaded-renderer modes** (e.g. `mupen64plus-ThreadedRenderer=True`) may still crash the loaded core. 
 
+VEmu plays best currently with V-Sync **OFF!**
+
 ## HEADS UP v0.9.1 - DATA HAS MOVED. Read this before upgrading from v0.9.0.
 
 In v0.9.0, all your data (ROMs, BIOS, saves, save states, core DLLs, keymap customizations) lived inside the mod folder. **r2modman deletes the mod folder before installing a new version**, so updating wiped that data. v0.9.1 fixes this by moving all user data to a permanent location outside the mod folder.
@@ -684,3 +686,10 @@ Model credits:
 [GameToy](https://skfb.ly/pHwHD) model by cobracso is licensed under [Creative Commons Attribution](http://creativecommons.org/licenses/by/4.0/).
 
 [SGES](https://skfb.ly/ovtIX) model by Manny Ruiz is licensed under [Creative Commons Attribution](http://creativecommons.org/licenses/by/4.0/).
+
+
+Super Epic Beta Testers:
+
+- milk
+
+- Viru

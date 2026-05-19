@@ -1,3 +1,9 @@
+# 0.9.3
+
+- Reworked Shared SPSCR Audio ring to avoid bad audio and use-after-free
+- Fixed default ROM being set to my own test games
+- Made mounted cartidges unable to be held. You must press E on them to eject right now.
+
 # 0.9.2
 
 - Fixed SGES Controller arriving as GameToy from the store. Now arrives as the controller as it should.
