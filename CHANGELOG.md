@@ -1,3 +1,7 @@
+# 0.9.4 
+
+- Fixed SGES Controller store entry for REAL this time
+
 # 0.9.3
 
 - Reworked Shared SPSCR Audio ring to avoid bad audio and use-after-free
