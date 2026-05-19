@@ -344,7 +344,7 @@ You can currently buy three props from the store. Props are located under the St
 
 ### Connecting a console to a TV
 
-Use the AV cord on the back of the console. The mod connects to vanilla TV props. (Not SmartTV - ironic, I know. Coming soon?)
+Use the AV cord on the back of the console. The mod connects to vanilla TV props. (Not SmartTV - ironic, I know. Coming soon?) Make sure the TV is set to a channel, not the default "invalid channel". 
 
 <p align="left" width="100%">
 
