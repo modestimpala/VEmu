@@ -16,11 +16,9 @@ Built on [libretro](https://www.libretro.com/) - in theory any core that runs in
 
 The known hard limits are **Dolphin has visual artifacts; gameplay otherwise functional**, **Vulkan-only cores don't work** (skipped at scan time), and **core-side threaded-renderer modes** (e.g. `mupen64plus-ThreadedRenderer=True`) may still crash the loaded core. 
 
-VEmu plays best currently with V-Sync **OFF!**
+VEmu plays best currently with VotV FPS limited to ~60-120 and V-Sync **OFF!**
 
-## HEADS UP v0.9.1 - DATA HAS MOVED. Read this before upgrading from v0.9.0.
-
-In v0.9.0, all your data (ROMs, BIOS, saves, save states, core DLLs, keymap customizations) lived inside the mod folder. **r2modman deletes the mod folder before installing a new version**, so updating wiped that data. v0.9.1 fixes this by moving all user data to a permanent location outside the mod folder.
+### Data Move Notice (0.9.0 -> 0.9.1)
 
 **New location for all user data:**
 
@@ -31,12 +29,6 @@ In v0.9.0, all your data (ROMs, BIOS, saves, save states, core DLLs, keymap cust
 (Paste that into Explorer's address bar to open it.) Subfolders `cores\`, `roms\`, `system\`, `saves\`, `keymaps\` are auto-created on first launch.
 
 **If you updated to v0.9.0 → v0.9.1 and have a backup from before the wipe:** copy your old `cores\`, `roms\`, `system\`, `saves\`, and `keymaps\` folders into `%LOCALAPPDATA%\VEmu\` and re-launch.
-
-**If you didn't back up:** there's no recovery for v0.9.0-wiped data. Sorry, it happened to me too.
-
-**`settings.ini` still lives in the mod folder** so the r2modman config UI can see it, which means it resets on each update. 
-
-**Uninstalling the mod no longer deletes user data.** `%LOCALAPPDATA%\VEmu\` survives r2modman uninstalls, profile resets, and profile re-imports. To fully purge, delete that folder manually.
 
 ---
 
@@ -70,7 +62,7 @@ In v0.9.0, all your data (ROMs, BIOS, saves, save states, core DLLs, keymap cust
 ### Basic controls (once playing)
 
 - **LEFT click** while holding the device to "gate" your input to the emulator. Without this, keyboard keys drive your character too. Gamepads work without gating.
-- **RIGHT click + drag** on the GameToy to rotate it in your hands. Hold SHIFT to translate sideways, ALT to translate forward/back.
+- **RIGHT click + drag** on the GameToy to rotate it in your hands. Hold SHIFT to translate sideways, ALT to translate forward/back. (press ALT after RIGHT click)
 - **F5/F6** to quicksave/quickload. **Tab** to fast-forward. **F8** to reset the core. Full hotkey list in [Controls](#controls).
 
 That's enough to play. The rest of this README covers customization, ROM layouts, save data, settings, and troubleshooting.
@@ -636,23 +628,40 @@ Overall, I'm very pleased with the results, and I'm more than delighted to share
 </p>
 
 **Game won't load / nothing happens when I insert the cart.**
-Open `<r2modman profile>\UE4SS\UE4SS.log` and search for `[VEmu]`. Common causes:
+
+Open `<votv>\WindowsNoEditor\VotV\Binaries\Win64\UE4SS.log` and search for `[VEmu]`. Common causes:
 - Missing core DLL - check `cores\` for the right filename. The mod logs `manifest: skipping <rom> -- no core for .<ext>` when nothing matches.
-- Missing BIOS - some cores need a BIOS in `system\`. Check `system\required_bios.txt` for the current state, and the [core's libretro docs page](https://docs.libretro.com/library/) for filenames.
+- Missing BIOS - some cores need a BIOS in `system\`. Check `system\required_bios.txt` for the current state, and the [core's libretro docs page](https://docs.libretro.com/library/bios) for filenames.
 - ROM file not where the manifest scanner expected - try Layout 1 (loose at root) as a sanity check.
 - For a core whose `.info` file isn't shipped: either drop the `.info` into `cores/info/` (grab it from the libretro buildbot alongside the DLL) or use a per-cart `core.txt`.
 
+**Black Screen / Audio but no video: Hybrid/dGPU**
+
+Set libretrocpp_corehost.exe to 'High performance' in Windows -> System -> Display -> Graphics, restart the game, and re-insert the cartridge.
+
 **Cover art didn't download.**
+
 Check your internet, then delete `<cart-folder>\cart_auto.failed` (or `<rom-stem>.cover_failed` for loose ROMs) and reload. Or just drop your own `cart.png` next to the ROM.
 
 **Cart shows up greyed-out in the dispenser.**
+
 The system needs a BIOS that isn't in `system\`. Check `required_bios.txt` for the expected filename.
 
 **Keys don't work in-emu but work in-game.**
+
 You probably aren't "gated" on the device - interact with it (default `Left Click`) first. Gamepad bindings work without gating; keyboard ones need it (so `W` doesn't drive both your character and the d-pad).
 
 **I don't know what a given button does in this game.**
+
 Check `keymaps\_descriptors\<system>.<rom>.txt` - the core writes what each RetroPad button means for this specific game.
+
+**My emulator games lag**
+
+Try disabling V-Sync, lowering settings, or trying lower-performance cores (SW cores like snes9x)
+
+**My inputs/audio are delayed or the emulator plays weird**
+
+Limit VotV FPS to ~60-120. 
 
 ---
 

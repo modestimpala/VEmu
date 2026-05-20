@@ -1,3 +1,13 @@
+# 0.9.5
+
+- Rotated GameToy meshes to face proper direction when holding
+- Tried to fix controller plug reset issue. Disabled cable collision. Not perfect but less destructive.
+- Fixed being unable to pick up cartridges after mounting in device.
+- Fixed Emu Pause/Unpause.
+- Hybrid/dGPU fixes: changed SharedD3D11Texture creation to pin the D3D11 device host adapter based on the LUID, avoiding video_sink.Init failed errors.
+- Added backoff logic for hook registration retries, improving performance when the LibretroCpp pak is not installed.
+- Added basic Vol Up/Down on device base.
+
 # 0.9.4 
 
 - Fixed SGES Controller store entry for REAL this time
