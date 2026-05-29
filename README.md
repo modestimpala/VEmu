@@ -75,10 +75,12 @@ That's enough to play. The rest of this README covers customization, ROM layouts
 
 </p>
 
+Set this in **Settings → Video → Advanced → RHI Mode**, then restart.
+
 RHI Modes:
-- 0 (D3D11) : Fully supported end-to-end
+- 0 (D3D11) : Fully supported end-to-end (default, recommended)
 - 1 (D3D12) : Fully supported end-to-end
-- 2 (Vulkan) : Software Cores ONLY. Hardware cores (Mupen, Dolphin, pcsx, etc) are **not** supported currently.
+- 2 (Vulkan) : **Not supported - no video for any core.** UE4 4.27's Vulkan RHI can't import the mod's shared GPU texture, so the screen stays black (audio still plays). If you're on Vulkan, set RHI Mode to **0** or **1** and restart. (A CPU-upload fallback for Vulkan is a possible future addition.)
 
 
 ---
@@ -142,6 +144,7 @@ Starting in v0.9.1 the mod uses **two** folders. The split exists because r2modm
 ├── keymaps\              ← per-system keybind INIs (auto-generated on first cart load - edit freely)
 │   ├── _global.ini       ← frontend hotkey bindings (auto-generated, edit freely)
 │   └── _descriptors\     ← auto-generated per-cart input descriptors (reference only)
+├── music\               ← drop .xm tracker tunes here; play in the Everdrive ROM browser
 └── .core_cache\          ← per-instance core copies (auto-managed)
 ```
 
@@ -336,6 +339,21 @@ You can currently buy three props from the store. Props are located under the St
     - Also added is the **SGES Controller** - needed to control the home console.
 - **Cartridge dispenser** - A prop that lists every ROM and allows you to spawn them as cartridges. Costs points per cartridge.
 
+### VEmu Everdrive (in-game ROM browser cartridge)
+
+The dispenser also lists a **VEmu Everdrive** cartridge. Instead of being one game, it's a flash-cart: insert it into the GameToy or SGES and an on-screen ROM browser appears *on the device's own screen* - no separate window, rendered right through the same video path as the games.
+
+- **Browse** with the D-pad / arrow keys: ◄ ► switches between system columns (SNES, NES, N64, PSX...), ▲ ▼ moves through that system's ROM list.
+- **Type to search** - start typing and the list filters across *all* systems (live, as-you-type); **B** clears the filter.
+- **A launches** the highlighted ROM - it loads exactly as if you'd inserted that game's own cartridge, while the Everdrive stays in the slot.
+- **Return to the browser** any time from in-game with **F7** (rebind `Frontend_OpenMenu` in `_global.ini`; a gamepad button works too).
+
+Same input rules as playing: **keyboard** navigation needs you to "gate" the device first (LEFT click while holding), **gamepad** navigation works without gating.
+
+#### Background music (optional)
+
+Drop `.xm` tracker modules (FastTracker II / keygen-style chiptunes) into `%LOCALAPPDATA%\VEmu\music\`. While the Everdrive browser is open they play shuffled, looping the folder, out of the device's speaker (3D-attenuated, at your master volume). No music = silent browser. VEmu ships **no** music - bring your own (the same BYO policy as ROMs/BIOS).
+
 ### Connecting a console to a TV
 
 Use the AV cord on the back of the console. The mod connects to vanilla TV props. (Not SmartTV - ironic, I know. Coming soon?) Make sure the TV is set to a channel, not the default "invalid channel". 
@@ -436,6 +454,7 @@ These come from `keymaps\_global.ini`:
 | `Pause`     | Pause / resume       |
 | `Tab`       | Fast-forward (hold) - default 4x  |
 | `Backspace` | Frame advance        |
+| `F7`        | Open VEmu Everdrive browser (for carts launched from it) |
 
 Save state slots 0-9 are supported (`Frontend_SaveState_<N>` / `Frontend_LoadState_<N>`); only a few are bound by default - bind the rest in `_global.ini` if you want them.
 

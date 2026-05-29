@@ -1,3 +1,14 @@
+# 0.9.6
+
+- Added Everdrive - a special cartridge that lists and plays every ROM. Costs 500 points, from the dispenser. 
+- Fixed GameToy cartridge collision not allowing Eject after inserting into GameToy
+- Fixed Cartridge Dispener allowing player to interact from far distances
+- Fixed some phys mats
+- Tightened corehost shmem trust-boundary
+- Fixed TV-cord not pushing tex after selecting channel
+- Disabled Vulkan path entirely. Vulkan is effectively unsupported at the moment. (see readme)
+
+
 # 0.9.5
 
 - Rotated GameToy meshes to face proper direction when holding
