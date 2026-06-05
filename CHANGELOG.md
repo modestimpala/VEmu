@@ -1,3 +1,24 @@
+# 0.9.8
+
+- Audio is now in sync with video!
+    - Emulator audio was running roughly 0.4 seconds behind the video, and that delay is now almost entirely gone.
+
+### New & changed settings
+
+- mixer_buffer_frames (new, default 1024) - Controls how much audio is buffered before it reaches your speakers. This is the main latency lever now.
+    - Lower it (e.g. 512) for even less delay if you have a fast PC.
+    - Raise it (2048 / 4096) if you hear any crackling or popping.
+- pre_buffer_kb default lowered 32 -> 16 - Less audio delay out of the box. This is your safety cushion against audio hiccups, so if you're on an older CPU or running multiple emulator devices at once and hear occasional crackling, set it back to 32. Latency focused users: try 8 or 4.
+
+
+ - Settings file now auto-updates
+    - When an update adds new options, they're now automatically appended to your existing settings.ini
+
+# 0.9.7
+
+- Improved Everdrive menu; added alphabetical jump with L1/L2, title marquee scrolling, fixed 4096 rom limit
+- Joypad input fixes
+
 # 0.9.6
 
 - Added Everdrive - a special cartridge that lists and plays every ROM. Costs 500 points, from the dispenser. 
