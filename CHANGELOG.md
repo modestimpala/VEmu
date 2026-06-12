@@ -1,3 +1,44 @@
+# 0.9.9
+
+### In-game Quick Menu (press F10)
+
+- Pause overlay over any running game. Change core options, toggle cheats, pick an audio effect, save/load states, swap discs, reset, and set fast-forward speed.
+- Scales from Game Boy up to PS2.
+
+### Cheats
+
+- Drop RetroArch `.cht` files into your cheats folder; matched to games by ROM name (Game Genie / GameShark / Action Replay supported).
+- Toggle cheats from the Quick Menu. Choices are remembered per game and re-applied after reset.
+
+### Video
+
+- Faster software-core video: rewritten color conversion (SSE2) gives roughly 4-6x higher throughput and lower per-frame CPU.
+- N64 video appears correctly with smoother frame handling and one less full-frame processing pass.
+
+### Audio
+
+- New higher-quality "sinc" resampler. Set `[Audio] resampler = sinc` in settings.ini (`linear` remains the fallback).
+- Audio effects (DSP): echo, reverb, EQ, chorus, phaser, tremolo, vibrato, wah, and more. 18 presets ship in `dsp\`. Pick one live from the Quick Menu or set `[Audio] dsp_preset`.
+- Faster internal video color conversion (SSE2) for lower per-frame CPU on software cores.
+
+### Controllers
+
+- PlayStation now boots as a DualShock by default; analog sticks work immediately. Digital-only games unaffected. (Force digital pad with `port0 =` under `[devices]` in `playstation.ini`.)
+- PS2 triggers (L2/R2) now report real analog pressure.
+- Analog invert / sensitivity: add `:value` to a stick binding, e.g. `Gamepad_RightY = Stick_R_Y:-1.0` (invert) or `Stick_L_X:0.5` (half sensitivity).
+- New `[devices]` aliases: `dualshock`, `analog_controller`, `guncon`, `justifier` (PlayStation), alongside Wii / GameCube.
+
+### Fixes
+
+- Fixed a recurring DirectX 11 crash (in nvwgf2umx.dll, common on NVIDIA). The per-frame video copy now runs on the render thread. Also plugged GPU memory leaks on cart insert.
+- Fixed PS2 L2/R2 reading as dead (Square button driving both triggers) on some games.
+- Fixed non-ASCII paths via UTF-8 application manifest and updating file handling
+- Fixed the AV cord on SGES not re-binding to TVs on load
+
+### New setting
+
+- `[Paths] user_data_dir` - relocate the entire VEmu user-data folder (cores / roms / saves / etc.) off C: or next to the mod. Launch-time only.
+
 # 0.9.8
 
 - Audio is now in sync with video!

@@ -30,6 +30,7 @@ VEmu plays best currently with VotV FPS limited to ~60-120 and V-Sync **OFF!**
 
 **If you updated to v0.9.0 → v0.9.1 and have a backup from before the wipe:** copy your old `cores\`, `roms\`, `system\`, `saves\`, and `keymaps\` folders into `%LOCALAPPDATA%\VEmu\` and re-launch.
 
+
 ---
 
 <p align="left" width="100%">
@@ -80,7 +81,7 @@ Set this in **Settings → Video → Advanced → RHI Mode**, then restart.
 RHI Modes:
 - 0 (D3D11) : Fully supported end-to-end (default, recommended)
 - 1 (D3D12) : Fully supported end-to-end
-- 2 (Vulkan) : **Not supported - no video for any core.** UE4 4.27's Vulkan RHI can't import the mod's shared GPU texture, so the screen stays black (audio still plays). If you're on Vulkan, set RHI Mode to **0** or **1** and restart. (A CPU-upload fallback for Vulkan is a possible future addition.)
+- 2 (Vulkan) : **Not supported — no video for any core.** UE4 4.27's Vulkan RHI can't import the mod's shared GPU texture, so the screen stays black (audio still plays). If you're on Vulkan, set RHI Mode to **0** or **1** and restart. (A CPU-upload fallback for Vulkan is a possible future addition.)
 
 
 ---
@@ -149,6 +150,23 @@ Starting in v0.9.1 the mod uses **two** folders. The split exists because r2modm
 ```
 
 `roms\` may not exist before the first scan - it'll appear (along with one `<system>/` subfolder per installed core) the first time the mod loads.
+
+#### Putting the user data folder somewhere else
+
+Don't want it on your C: drive? Point VEmu at any folder by setting `user_data_dir` under `[Paths]` in `settings.ini`:
+
+```ini
+[Paths]
+user_data_dir = D:\Games\VEmu
+# environment variables work too:
+# user_data_dir = %USERPROFILE%\Documents\VEmu
+```
+
+The path is taken **literally** - whatever you name becomes the root that holds `cores\`, `roms\`, `saves\`, etc. (no `\VEmu` is appended for you). A relative path is resolved against the mod folder. The folder is created if it doesn't exist.
+
+Two things to know:
+- **It only applies at game launch.** Unlike most settings (which re-apply on cart eject/reinsert), the data root is locked in once at startup - change it and restart VotV.
+- **Move your data first.** VEmu doesn't migrate anything. Before launching with a new `user_data_dir`, copy your existing `%LOCALAPPDATA%\VEmu\` contents into the new folder, or you'll start with empty cores/ROMs/saves libraries.
 
 ---
 
@@ -451,10 +469,13 @@ These come from `keymaps\_global.ini`:
 | `F3` / `F4` | Save / load slot 2   |
 | `F8`        | Reset core           |
 | `F9`        | Toggle FPS overlay   |
+| `F10`        | Toggle Quick Menu   |
 | `Pause`     | Pause / resume       |
 | `Tab`       | Fast-forward (hold) - default 4x  |
 | `Backspace` | Frame advance        |
 | `F7`        | Open VEmu Everdrive browser (for carts launched from it) |
+
+Note for F10 binds: UE4SS Open Console is bound to this by default, recommended to change this in `\shimloader\mod\ConsoleEnablerMod\Scripts\main.lua` or switch Quick Menu bind.
 
 Save state slots 0-9 are supported (`Frontend_SaveState_<N>` / `Frontend_LoadState_<N>`); only a few are bound by default - bind the rest in `_global.ini` if you want them.
 
@@ -527,6 +548,47 @@ L2           -- "Z Trigger"
 If a button or axis is missing from this file, the core didn't advertise it (usually means the game doesn't use it). Use the action tokens here (`B`, `Y`, `L2`, `Stick_L_X`, etc.) as the RHS values when writing a per-cart override like `keymaps\n64.banjo-tooie (usa).ini`.
 </details>
 
+### Controller device type (`[devices]`)
+
+Some cores emulate more than one kind of controller per port and only hook up the right one when the frontend asks for it. The headline case is **Dolphin**: a Wii game that needs the **Nunchuk** gets a bare Wii Remote (no stick, no C/Z buttons) unless you explicitly select the Wiimote + Nunchuk type. Without this, nunchuk-required games are unplayable even though the core "runs".
+
+Add a `[devices]` section to a keymap file. It layers exactly like the keybind sections - `<system>.ini` sets a per-core default, `<system>.<rom>.ini` overrides it per game. Keys are `port0`..`port3` (`port` alone means `port0`); only the ports you name change.
+
+```ini
+[devices]
+port0 = nunchuk        ; attach Wii Remote + Nunchuk on port 0
+```
+
+The value is a friendly alias **or** a raw libretro device id (decimal or `0xHEX`). The aliases cover Dolphin's Wii/GC types and the PlayStation pad types; the numeric form works for **any** core.
+
+| alias | id | meaning |
+|---|---|---|
+| `joypad` / `wiimote` | `0x1` | RetroPad / bare Wii Remote |
+| `wiimote_sideways` | `0x201` | Wii Remote held sideways |
+| `wiimote_nunchuk` / `nunchuk` | `0x301` | **Wii Remote + Nunchuk** |
+| `classic` / `classic_controller` | `0x401` | Classic Controller |
+| `classic_pro` | `0x501` | Classic Controller Pro |
+| `gamecube` / `gc` | `0x601` | GameCube pad on a Wii title |
+| `real_wiimote` | `0x600` | real Bluetooth Wii Remote passthrough |
+| `dualshock` | `0x205` | **PlayStation DualShock** (analog sticks live) |
+| `analog_controller` | `0x105` | PlayStation Analog Controller |
+| `guncon` | `0x104` | PlayStation Guncon light gun |
+| `justifier` | `0x204` | PlayStation Konami Justifier light gun |
+| `none` | `0x0` | explicitly disconnect the port |
+
+**PlayStation already defaults to `dualshock`** so the analog sticks work out of the box. To go back to the plain digital pad, set `port0 =` (empty) under `[devices]` in your `playstation.ini`. The `dualshock` / `analog_controller` / `guncon` / `justifier` aliases use the ids both shipped PSX cores agree on; rarer pads (neGcon, analog joystick) differ between cores, so use the numeric id from the corehost log for those.
+
+**Finding the right id for a non-Dolphin core:** load the game once and check the corehost log - each port prints what it advertises, e.g. `controller info: port 0 ... id=0x301 -- "WiiMote (Nunchuk)"`. Drop that id (alias or number) into `[devices]`.
+
+**Wiimote pointing (IR):** by default Dolphin maps the IR pointer to the **right analog stick** (`dolphin_ir_mode`), so aiming works on a normal gamepad with no extra setup - C → face X, Z → face Y, Nunchuk stick → left stick. Dolphin's *mouse* IR mode (`dolphin_ir_mode = 2`) and lightgun/touch-screen pointer input aren't wired yet.
+
+Example file `keymaps\<dolphin_system_tag>.<rom>.ini`:
+
+```ini
+[devices]
+port0 = nunchuk
+```
+
 ---
 
 <p align="left" width="100%">
@@ -578,12 +640,13 @@ To start over: delete `settings.ini` and re-launch.
 
 | Section | What it tunes |
 |---|---|
+| `[Paths]` | `user_data_dir` - relocate the whole user-data folder ([details](#putting-the-user-data-folder-somewhere-else)). Launch-time only. |
 | `[Defaults]` | Fallback `core =` / `rom =` for the cartridge dispenser |
 | `[Frontend]` | OSD toast duration, fast-forward speed multiplier |
 | `[State]` | Save state slot range (defaults 0..9 - match the shipped hotkeys) |
 | `[SRAM]` | Battery-save flush cadence (default 30 s) |
 | `[Runtime]` | `threaded_core`  |
-| `[Audio]` | Sample rate, ring/pre-buffer sizes, master volume (spatial/falloff stays in UE4 attenuation on the BP audio component) |
+| `[Audio]` | Sample rate, ring/pre/mixer buffer sizes, master volume, `resampler` (`linear` or `sinc[-quality]`), `dsp_preset` (audio effect chain, names resolve against the `dsp\` folder). Spatial/falloff stays in UE4 attenuation on the BP audio component. |
 | `[Device]` | Park-and-claim TTL, recent-spawn migration window |
 | `[Debug]` | OSD texture-bake toggle, FPS overlay, log verbosity floor, verbose-diagnostics gate |
 
@@ -601,7 +664,9 @@ Most settings re-apply on cart eject + reinsert (the child process is set up fre
 
 `[Runtime] threaded_core` requires a UE restart - the worker thread lifecycle is decided at first cart load and cached.
 
-If you change a value and don't see it apply, eject the cart and reinsert it (or restart for `threaded_core`).
+`[Paths] user_data_dir` also requires a UE restart - the user-data root is resolved once at startup, before any cart is inserted.
+
+If you change a value and don't see it apply, eject the cart and reinsert it (or restart for `threaded_core` / `user_data_dir`).
 
 ### Bad values
 
@@ -620,8 +685,7 @@ Bad values are logged and ignored. See your UE4SS log for more info.
 I never really thought I'd end up making an entire libretro frontend for this mod, but that's basically where it's at. There are only a handful of features it's still lacking, to name a few:
 
 - Rewind
-- Cheats
-- UI for keybinds/core options
+- A UI for editing keybinds (core options and cheats now have one via the in-game Quick Menu)
 
 For rendering, it started with "can I get a SNES ROM displayed in-game?" Game Boy and SNES era video is cheap to render - your CPU can do it without breaking a sweat. I started by passing properly formatted pixel data to one of the game's plugins that converts it into a Texture2D. 
 
@@ -718,8 +782,14 @@ Model credits:
 
 Super Epic Beta Testers:
 
-- milk
+- milk - early testing, keymap fixes 
 
-- Viru
+- Viru - early testing, keymap fixes 
 
-- Jake_489
+- Jake_489 - audio latency fix
+
+- Mohl - early testing, audio/input latency fixes
+
+- Robeebert - dx11 crash fix, ps2 l2/r2 input fix
+
+- Valkyria Hammerlocke - ps2 l2/r2 input fix
