@@ -1,3 +1,81 @@
+# 1.0.0
+
+- **F9 now opens the quick menu**, and **F10** shows or hides the FPS counter.
+- **Save states are now compressed**, and old ones still load just fine.
+- **Your consoles pick up where you left off.** When you save Voices of the Void (or quick/autosave), every console that's running a game is saved too. When you load that save, each one boots straight back into its game. Settings > Resume delay sets how long a game starts up before it jumps back to where you were.
+
+## New
+
+### Consoles
+- **PlayStation**, with its own controller. It plays games from discs instead of cartridges. These awesome models were created by community member **Viru**.
+- **Light gun.** The SGES Zapper plugs into a console like a controller. Aim it at the TV the console is connected to and click to shoot: you point at the actual screen in-game. Supports light gun games on NES (Duck Hunt and friends), PlayStation (Time Crisis and other GunCon games), Saturn (House of the Dead and other Virtua Gun games) and Dreamcast. Shooting off the screen reloads. The gun's buttons are on T, Y, G, B, I and N, with U/H/J/K as a d-pad, keys the base game doesn't use.
+
+### Games and discs
+- **Discs**, **jewel cases** and a **jewel case rack** to store them on.
+- **Rewind.** Hold R to go back in time. Only works on cores with fairly small save states, so not Dolphin, PCSX2 and similar.
+- **Multi-disc games.** Put all the discs of a game in one folder. To swap discs, take the disc out of the running console and put in the next one, just like the real thing.
+- **Jewel case artwork.** Cases get a back cover and disc label, either from your own image files or downloaded automatically. Multi-disc games are labelled "DISC 1 OF 3" and so on.
+- **Saturn games use Beetle Saturn by default**, which supports the light gun.
+- **.7z files** work the same as .zip files.
+- **Arcade games load correctly.** Zipped arcade games (FBNeo, MAME) were being unpacked when they shouldn't have been.
+- **Clearer error messages.** If a game won't start, won't load or crashes, a hint popup tells you which system it was and why.
+- **Easier BIOS setup.** `REQUIRED_BIOS.txt` in your system folder now starts with a list of what's missing, marks each file as found or missing, and gives the exact place to put each one. PS2 BIOS files are now detected correctly.
+
+### Controllers
+- **Any controller works**, including PlayStation, Switch and most generic USB or Bluetooth pads. Before, only one Xbox controller worked.
+- **Up to four players.** Each controller you connect becomes the next player, and the game remembers which slot each controller had. A message pops up on the console when a controller connects or disconnects.
+- **Rumble.** Games that support rumble now shake your controller. You can set the strength or turn it off. For N64 games, you may have to set the core's Player 1 Pak to "Rumble" in the quick menu.
+- **Motion controls.** Games that use tilt or a gyro can read your controller's motion sensors, if your controller has them.
+- **Gyro aiming.** Turn the controller to aim, like Steam Input's gyro aiming. You can aim all the time or only while you hold a button. In Wii games this moves the Wii pointer, and it works with a Nunchuk attached.
+- **Tilt as buttons/sticks.** You can bind tilting the controller left, right, forward or back, or shaking it, to any button. You can also use tilt as a stick.
+- **Rotate controllers in your hand** by holding right mouse button. Hold Shift or Alt with it to move the controller instead. It works just like the GameToy.
+- **The controller in your hand moves with your real one** (optional, off by default). Tilt your real controller and the controller in the game tilts too.
+- **Layouts for more systems:** GameCube and Wii, PSP and Mega Drive, plus keyboard controls for 25 systems that had none.
+- **GoldenEye 007 comes with a twin-stick layout.** One controller plays it like a modern shooter.
+
+### Quick menu (F9)
+- **Redesigned.** The menu looks the same at any resolution and is easier to read, with even more info.
+- **Save/Load shows a preview** of each slot, with a screenshot and the time you saved.
+- **Controllers page.** Choose which controller is which player, make a controller rumble to find out which one it is, and set rumble strength.
+- **Controls page.** Rebind any button or key while you play, for this game only, for every game on the system, or for the frontend shortcuts. Each player can have their own controller layout.
+- **Settings page.** Change common settings without editing a file. Each setting tells you whether it takes effect right away, on the next game or after a restart.
+- **Per-game options.** Core options can apply to every game, or to just the game you're playing.
+
+### Everdrive
+- **New demo/cracktro scenes.** An oldskool intro, a keygen screen before each game and a demo screensaver. Any button skips them, and you can turn them off in settings (Start/Home).
+- **Customizable.** Add your own scroller fonts, scroll text and greetings in `%LOCALAPPDATA%\VEmu\everdrive\`. Music now plays .mod as well as .xm.
+- **System tabs scroll** when you have lots of systems.
+
+### Cart Dispenser
+- **Much faster with big libraries.** Simpler filter buttons, and a list that only draws what's on screen. With a 2000+ game NES library, FPS went from about 40 to over 110.
+
+### Graphics
+- **Direct core Vulkan and Direct3D 11 support.** Cores that can use Vulkan or D3D11, such as Dolphin and PCSX2, can now render with them. A graphics setting lets you choose Auto, OpenGL, Vulkan or D3D11. Auto works for most people. If your graphics card can't run Vulkan, the game falls back to OpenGL.
+- **No more freeze when you insert a game.** Games load in the background, so the game keeps running while a big PS2 or GameCube game starts up.
+- **More cores work**, including N64 cores that need Vulkan.
+- **Changing a game's internal resolution mid-game** now gives a sharper picture, instead of shrinking it to the old size.
+- **Vertical (rotated) games** are shown the right way up.
+- **The FPS counter** shows the real frame rate.
+
+### Audio
+- New audio effects in the quick menu's audio filter page: Bitcrusher (8-bit or subtle), Overdrive (warm or heavy), Hall and Room reverb, and a pitch shift.
+- Smoother sound at the lowest resampler quality.
+- Fast-forward can play sound now (sped up, like a tape): Settings > Fast forward sound. Off by default.
+
+## Fixed
+- Dolphin (GameCube/Wii): fixed graphics artifacts, missing audio, frozen pictures, and crashes when starting a game or changing resolution.
+- N64: fixed crashes when saving, loading or ejecting, fixed games that ignored all input, and fixed the default button layout.
+- Large GameCube and Wii save states no longer fail to load.
+- Save-state screenshots are saved again.
+- Some core options showed up as on/off switches when they had other choices.
+- Messages from the game (resolution changes, menu actions) sometimes took up to 10 seconds to appear.
+- A controller could control a console that nobody was holding.
+- Unpacked disc images used to pile up in your temp folder. They're now cleaned up.
+- Enabled CCD on Plugs and CDs, fixing an issue where they would fall through the map. 
+- Fixed issues ejecting cartridges from consoles. Grabbing a cartridge or disc out of a console now puts it straight into your hands, instead of popping it out onto the console.
+- Fixed a disc sometimes vanishing when you grabbed it and moved quickly, leaving the game running with no disc in the console, and a second disc then fitting in on top.
+- Saturn and other CD games kept as separate track files no longer boot to an empty drive.
+
 # 0.9.9
 
 ### In-game Quick Menu (press F10)
