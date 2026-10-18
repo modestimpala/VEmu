@@ -1,6 +1,6 @@
 {
     "name": "VEmu",
-    "version_number": "1.0.1",
+    "version_number": "1.1.0",
     "website_url": "https://github.com/modestimpala/VEmu",
     "description": "A physical libretro frontend inside Voices of the Void. Play your own ROMs inside the game!",
     "dependencies": [

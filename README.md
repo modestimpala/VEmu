@@ -18,7 +18,7 @@ VEmu 1.0.0 has lots of new cool features. Please be sure to check out the CHANGE
 
 Built on [libretro](https://www.libretro.com/) - Currently, the only known limits are cores that require abnormal input styles, like pure Bluetooth Wii remotes, DS touch-style input, or keyboard-only cores like DOSBox.
 
-VEmu plays best currently with VotV FPS limited to ~60-120 and V-Sync **OFF!**
+VEmu plays best currently with VotV FPS limited to *as close as you can get to the same FPS as the Emulator, and V-Sync **OFF!***
 
 ## User Data Location
 
@@ -44,7 +44,7 @@ VEmu plays best currently with VotV FPS limited to ~60-120 and V-Sync **OFF!**
 
 4. **Drop a ROM under `%LOCALAPPDATA%\VEmu\roms\`.** Just put `super_mario_world.sfc` directly in `roms\` and the mod figures out the system from the extension. (For zips and more advanced layouts, see [ROMs](#roms).)
 
-5. *(Optional)* **If the core needs a BIOS, drop it into `%LOCALAPPDATA%\VEmu\system\`.** Check `system\required_bios.txt` after the first launch to see what's needed. 
+5. *(Optional)* **If the core needs a BIOS, drop it into `%LOCALAPPDATA%\VEmu\system\`.** Check `system\REQUIRED_BIOS.txt` after the first launch to see what's needed. 
 
 6. **Launch VotV.**:
     - Props are located under the Store -> Essentials -> Electronics
@@ -112,6 +112,7 @@ Code in this mod is either written by me or used under permissive open-source li
 ├── libretrocpp_corehost.exe       <- the per-core child process host
 ├── settings.ini                   <- auto-generated on first run; resets on each update
 ├── cores\info\                    <- shipped .info metadata files 
+├── dsp\                           <- audio effect presets (quick menu's Audio Filter, [Audio] dsp_preset)
 └── keymaps\_reference.txt         <- shipped reference doc for the keymap format
 ```
 
@@ -139,7 +140,7 @@ Code in this mod is either written by me or used under permissive open-source li
 ├── cheats\              <- RetroArch .cht cheat files for the quick menu's Cheats page
 ├── controllers.ini      <- which controller is which player (auto-written)
 ├── music\               <- drop .xm / .mod tracker tunes here; play in the Everdrive ROM browser
-├── everdrive\           <- optional Everdrive scene extras: fonts\*.png, scroll.txt, greets.txt
+├── everdrive\           <- optional Everdrive scene extras: fonts\*.png, scroll.txt, greets.txt (create it yourself)
 └── .core_cache\          <- per-instance core copies (auto-managed)
 ```
 
@@ -238,26 +239,31 @@ It depends on the core. Each libretro core has its own page in the libretro docs
 
 Example: PCSX-ReARMed's BIOS list lives at https://docs.libretro.com/library/pcsx_rearmed/#bios.
 
-### `system/required_bios.txt` (auto-generated)
+### `system\REQUIRED_BIOS.txt` (auto-generated)
 
-Every time the mod scans the manifest, it writes a fresh `required_bios.txt` into `system/` summarising what each installed core wants and whether the file is currently present. It's the fastest way to see what's missing.
+Every time VEmu scans your library (at launch and whenever the dispenser rescans), it rewrites `REQUIRED_BIOS.txt` in the `system` folder. It starts with a list of any cores missing a required file, then has a section per installed core showing every BIOS file it knows about, whether you have it, and exactly where a missing one goes. It's the fastest way to see what's missing.
 
 ```
+Cores missing REQUIRED files (details in their sections below):
+    pcsx2_libretro.dll  (LRPS2)
+
+## pcsx2_libretro.dll  (LRPS2)
+    [ ] pcsx2/bios/                   REQUIRED  -- PS2 BIOS
+          needs: a PS2 BIOS dump (4 MB .bin, e.g. SCPH-70012), any filename
+          put it in: C:\Users\You\AppData\Local\VEmu\system\pcsx2\bios
+
 ## pcsx_rearmed_libretro.dll  (PCSX-ReARMed)
-    [X] scph5500.bin                  optional  -- scph5500.bin (PS1 JP BIOS)
-    [X] scph5501.bin                  optional  -- scph5501.bin (PS1 US BIOS)
-    [X] scph5502.bin                  optional  -- scph5502.bin (PS1 EU BIOS)
-    [ ] psxonpsp660.bin               optional  -- psponpsx660.bin (PSP PSX Emu BIOS)
+    [X] scph5501.bin                  optional  -- PS1 US BIOS
 ```
 
-`[X]` = present, `[ ]` = missing. `REQUIRED` means the core won't run games without it; `optional` means it improves accuracy or boot logos but isn't load-blocking. The file is regenerated on every scan (don't edit).
+`[X]` = present, `[ ]` = missing. `REQUIRED` means games for that core won't start without it; `optional` means it improves accuracy or boot logos but isn't needed. A name ending in `/` is a folder to put the file in, under any name. The file is regenerated on every scan, so don't bother editing it. A missing BIOS doesn't hide or grey out any games; they fail to start and the hint popup says why.
 
 ### How to add a BIOS
 
 1. **Legally acquire the file.** VEmu will never ship any BIOS files.
-2. **Use the exact filename** the core expects. Filenames are case-sensitive on some systems and the core won't search for variants. Either copy the name straight out of `required_bios.txt`, or check the core's libretro docs page.
-3. **Drop it directly into `%LOCALAPPDATA%\VEmu\system\`** - no subfolders (unless the core specifies one, e.g. `Mupen64plus/IPL.n64`).
-4. **Restart the game.** Cores read the BIOS once at load time. Requires full reload.
+2. **Use the exact filename** the core expects. The core won't search for other spellings, so copy the name straight out of `REQUIRED_BIOS.txt`, or check the core's libretro docs page.
+3. **Drop it directly into `%LOCALAPPDATA%\VEmu\system\`** - no subfolders, unless the core asks for one (e.g. LRPS2's `pcsx2\bios\`, or `Mupen64plus\IPL.n64`).
+4. **Eject and re-insert the cartridge.** Each insert starts the core fresh, so it finds the new file. `REQUIRED_BIOS.txt` itself updates on the next launch or dispenser rescan.
 
 ---
 
@@ -302,8 +308,9 @@ roms\
 
 Recognized folder names:
 
-- **Short aliases (5)**: `snes`, `nes`, `gb`, `gbc`, `gba` - friendly shortcuts that map to the libretro database name.
-- **Anything else**: the `systemid` from a core's `.info` file - e.g. `nintendo_64`, `playstation`, `playstation_portable`, `nintendo_gamecube`, `nintendo_ds`, `sega_genesis`. Check the systemid line in the mod folder's `cores\info\<core>_libretro.info` (shipped metadata) if you're unsure.
+- **Short aliases (6)**: `snes`, `nes`, `gb`, `gbc`, `gba`, `sega_saturn` - friendly shortcuts that map to the libretro database name.
+- **Anything else**: the `systemid` from a core's `.info` file - e.g. `nintendo_64`, `playstation`, `playstation2`, `playstation_portable`, `gamecube` (Dolphin, GameCube and Wii), `nds`, `mega_drive`, `dreamcast`, `doom`. Check the systemid line in the mod folder's `cores\info\<core>_libretro.info` (shipped metadata) if you're unsure.
+- Other short names like `n64` or `psx` are **not** recognised; a folder with one of those names is treated as a single game's folder (Layout 3) instead.
 
 **You don't have to create these yourself.** On every scan, the mod auto-creates an empty `roms/<system>/` for each installed core (alias name where one exists, otherwise the systemid). So dropping `snes9x_libretro.dll` into `cores/` and re-launching is enough to make `roms/snes/` appear.
 
@@ -326,7 +333,7 @@ Use this layout if you:
 
 ### Cover art
 
-Put `cart.png` (or `cover.png`, `box.png`, `art.png`) in the cart folder. For loose ROMs, name it after the ROM stem (`pokemon_red.png`).
+Put `cart.png` (or `cover.png`, `box.png`, `art.png`; `.jpg` works too) in the cart folder. For loose ROMs, name it after the ROM stem (`pokemon_red.png`).
 
 If you don't provide one, the mod tries to grab a cover from [libretro-thumbnails](https://thumbnails.libretro.com) on first cart spawn:
 
@@ -429,13 +436,7 @@ Drop `.xm` (FastTracker II) or `.mod` (ProTracker / Amiga, including `mod.name` 
 
 #### Intro, demo and keygen scenes
 
-The Everdrive puts on a bit of a show, oldskool cracktro style:
-
-- **Intro** - inserting the cart plays a cracktro: copper bars, a wobbling chrome logo, your library stats typed out, and a sine scroller over a rippling mirror. Any button skips to the browser. Coming back from a game with **F7** skips it.
-- **Keygen** - picking a ROM pops a keygen window for a moment (serial, progress bar, the works) before the game boots. Any button skips it.
-- **Demo screensaver** - leave the browser idle and a demo takes over, cycling plasma, a burning logo, a tunnel with greetings, a rotozoomer, a checkerboard floor with a dot ball, and a warp starfield, with a scroller touring your library. Any input wakes it.
-
-All three can be turned off, or the idle time changed, from the browser's settings panel (**Start**) or under `[Frontend]` in `settings.ini` (`everdrive_intro`, `everdrive_launch_fx`, `everdrive_saver_sec`). Changes apply the next time the Everdrive opens.
+The Everdrive includes optional intro, launch, and idle effects, in oldskool cracktro/demoscene style. Configure them in the browser settings or in `settings.ini`; changes apply the next time it opens.
 
 Make it yours in `%LOCALAPPDATA%\VEmu\everdrive\`:
 
@@ -458,13 +459,14 @@ Make it yours in `%LOCALAPPDATA%\VEmu\everdrive\`:
 > **[SPOILERS]** - Click below to expand if you want the full mechanic explained.
 <details>
 <summary>Click to reveal corruption mechanic</summary>
-You can microwave cartridges to corrupt them. This is exactly like the corruption tools you might find online, but randomly done on the cartridge's ROM behind the scenes. It only does it once on the first zap. If you take it out, hold it, put it in your inventory, etc, it will reset and allow you to microwave it again. You can technically re-corrupt the already corrupted ROM. 
+You can microwave cartridges to corrupt them. This is exactly like the corruption tools you might find online, but randomly done on the cartridge's ROM behind the scenes. It only does it once on the first zap. If you take it out, hold it, put it in your inventory, etc, it will reset and allow you to microwave it again. Microwaving an already corrupted cart gives a fresh corruption of the original ROM, not one stacked on the last. 
 
 The corruption is actually deterministic - it gives it a seed, and writes the corrupted ROM to `saves\corrupted\` with a filename that includes the original ROM ID and the microwave seed. The original ROM is left untouched in `roms\`.
 
 - Corrupted ROMs are written to `saves\corrupted\<rom_id>_<seed>.<ext>`. Originals are never modified.
 - Per-system protection attempts to keep the game playable
-- Each microwave session uses a fresh random seed, baked into the filename. Same seed + same corruption, so you can save an interesting one for later.
+- Each microwave session uses a fresh random seed, baked into the filename. Same seed + same ROM = same corruption.
+- Corrupted ROMs don't show up in the dispenser. The cart remembers its corrupted file (it's saved with your VotV save), and keeps the original's cover art.
 
 **"Un-corrupting" can be done by dunking it in water.**
 
@@ -522,6 +524,23 @@ D-pad on arrow keys, **WASD drives the left analog stick** (so games that switch
 | `Enter`      | Start                                      |
 | `RightShift` | Select *(PSX/PS2/PSP)*                     |
 
+### Keyboard - GameCube / Wii (Dolphin)
+
+| Key          | GameCube              | Wii Remote       |
+|--------------|-----------------------|------------------|
+| `↑ ↓ <- →`    | D-Pad                 | D-Pad            |
+| `W A S D`    | Control stick         | Nunchuk stick    |
+| `I J K L`    | C-stick               |                  |
+| `Z` / `X`    | A / B                 | A / B            |
+| `C` / `V`    | X / Y                 | 1 / 2            |
+| `Q` / `E`    | L / R triggers        | Shake on `E`     |
+| `LeftShift`  | Z                     |                  |
+| `Enter`      | Start                 | +                |
+| `RightShift` |                       | -                |
+| `H`          |                       | Home             |
+
+Systems without a keyboard layout (Dreamcast, 3DS, Game Gear, Virtual Boy, computers and so on) still get a controller layout, and their keymap file ends with commented-out keyboard suggestions.
+
 ### Keyboard - DOOM (PrBoom)
 
 FPS-style layout. WASD is split: W/S move forward/back via D-pad, A/D strafe via libretro L/R (PrBoom's "Strafe Left/Right"), and the arrow keys turn the camera. 
@@ -557,7 +576,7 @@ These come from `keymaps\_global.ini`:
 | `F9`        | Quick menu (pause, save/load slots, core options, cheats, audio filter, disc, controllers, controls, settings) |
 | `F10`       | Toggle FPS overlay   |
 | `Pause`     | Pause / resume       |
-| `Tab`       | Fast-forward (hold) - default 4x  |
+| `Tab`       | Fast-forward (hold) - default 4x, silent unless Settings > Fast forward sound is on |
 | `R`         | Rewind (hold)        |
 | `Backspace` | Frame advance        |
 | `F7`        | Open VEmu Everdrive browser (for carts launched from it) |
@@ -619,19 +638,21 @@ Format is `<UE-key-name> = <action>`. Key names are UE FKey FNames - so `RightSh
 
 Load order, top-to-bottom: First loaded, last loaded. Last loaded wins. 
 
-For a SNES ROM file called `Super Mario World`:
+For a SNES ROM file called `Super Mario World (USA)`:
 
 | Cart input | Frontend hotkeys |
 |---|---|
 | compiled defaults | (none) |
 | `snes.ini` | `_global.ini` |
-| `snes.super_mario_world.ini` | `_global.snes.ini` |
-|   | `_global.snes.super_mario_world.ini` |
+| `snes.Super Mario World (USA).ini` | `_global.snes.ini` |
+|   | `_global.snes.Super Mario World (USA).ini` |
 
 
-`<rom>` matches the rom_id used in `roms/<system>/<rom>.srm` and `_descriptors/<system>.<rom>.txt` - copy from there to avoid typos.
+The game part of the name is the game's name exactly as VEmu shows it (the ROM file name without extension, or the folder name for a game in its own folder), with spaces and capitals kept. Only characters Windows doesn't allow in file names become `_`. Copy it from `_descriptors\<system>.<rom>.txt` to avoid typos.
 
-**Corrupted carts inherit regular bindings.** A corrupted cart's customized keymap would need a seed suffix (`banjo-tooie (usa)_1815209044.ini`). The regular file loads first, then the seed-specific one on top. 
+**Corrupted carts inherit regular bindings.** A corrupted cart's customized keymap needs a seed suffix (`n64.Banjo-Tooie (USA)_1815209044.ini`). The regular file loads first, then the seed-specific one on top. 
+
+Hotkeys load last, so a key bound as a hotkey stops working as a game control. Light gun keys (`Gun_*`) are the exception: they only act while a gun is in your hand and leave the key's game control alone otherwise.
 
 ### Shipped per-game layouts
 
@@ -669,7 +690,7 @@ If a button or axis is missing from this file, the core didn't advertise it (usu
 
 Some cores emulate more than one kind of controller per port and only hook up the right one when the frontend asks for it. The headline case is **Dolphin**: a Wii game that needs the **Nunchuk** gets a bare Wii Remote (no stick, no C/Z buttons) unless you explicitly select the Wiimote + Nunchuk type. Without this, nunchuk-required games are unplayable even though the core "runs".
 
-Add a `[devices]` section to a keymap file. It layers exactly like the keybind sections - `<system>.ini` sets a per-core default, `<system>.<rom>.ini` overrides it per game. Keys are `port0`..`port3` (`port` alone means `port0`); only the ports you name change.
+Add a `[devices]` section to a keymap file. It layers exactly like the keybind sections - `<system>.ini` sets a per-core default, `<system>.<rom>.ini` overrides it per game. Keys are `port0`..`port3`, counting from 0, so `port0` is controller 1 (`port` alone means `port0`); only the ports you name change.
 
 ```ini
 [devices]
@@ -687,9 +708,12 @@ The value is a friendly alias **or** a raw libretro device id (decimal or `0xHEX
 | `classic_pro` | `0x501` | Classic Controller Pro |
 | `gamecube` / `gc` | `0x601` | GameCube pad on a Wii title |
 | `real_wiimote` | `0x600` | real Bluetooth Wii Remote passthrough |
+| `dualshock` | `0x205` | PlayStation DualShock (the PS1 default) |
+| `analog_controller` | `0x105` | PlayStation analog controller |
+| `guncon` / `justifier` | `0x104` / `0x204` | PlayStation light guns |
 | `none` | `0x0` | explicitly disconnect the port |
 
-**Finding the right id for a non-Dolphin core:** load the game once and check the corehost log - each port prints what it advertises, e.g. `controller info: port 0 ... id=0x301 -- "WiiMote (Nunchuk)"`. Drop that id (alias or number) into `[devices]`.
+**Finding the right id for another core:** load the game once and check `UE4SS.log` (the corehost's output is copied there) - each port prints what it advertises, e.g. `controller info: port 0 ... id=0x301 -- "WiiMote (Nunchuk)"`. Drop that id (alias or number) into `[devices]`.
 
 **Wiimote pointing (IR):** by default Dolphin maps the IR pointer to the **right analog stick** (`dolphin_ir_mode`), so aiming works on a normal gamepad with no extra setup - C → face X, Z → face Y, Nunchuk stick → left stick. [Gyro aim](#motion-controls) can drive that stick with your controller's gyro. Dolphin's *mouse* IR mode (`dolphin_ir_mode = 2`) and touch-screen input aren't wired yet.
 
@@ -712,7 +736,7 @@ Everything lives under `%LOCALAPPDATA%\VEmu\saves\<system>\`:
 | File | What |
 |---|---|
 | `<rom_id>.srm` | Battery save (SRAM). Flushed every 30 s while the cart is loaded; tunable via `[SRAM] flush_interval_sec` in `settings.ini`. |
-| `<rom_id>.state<N>` | Save state slot `N` (0-9). A toast appears when one is written. |
+| `<rom_id>.state<N>` | Save state slot `N` (0-9), compressed. A toast appears when one is written. A state only loads in the same core and core version that made it. |
 | `<rom_id>.state<N>.png` | Thumbnail PNG of the framebuffer at the moment of save - written automatically next to the state file. Useful when picking a slot to load. |
 | `<rom_id>.opt` | *(optional)* Per-game libretro core options. Overlays whatever's in `%LOCALAPPDATA%\VEmu\saves\<core>.opt`. See [Per-game core options](#per-game-core-options). |
 
@@ -729,7 +753,7 @@ Saving Voices of the Void (including quicksaves and autosaves) also saves every 
 
 ### Per-game core options
 
-Libretro cores expose their own option grids (renderer, region, internal resolution, etc.) - these are advertised to the frontend at game-load time. VEmu writes the live values to `%LOCALAPPDATA%\VEmu\saves\<core>.opt` whenever the core asks. You can also hand-edit that file.
+Libretro cores expose their own option grids (renderer, region, internal resolution, etc.) - these are advertised to the frontend at game-load time. The every-game values live in `%LOCALAPPDATA%\VEmu\saves\<core>.opt`, named after the core's own name in lowercase with spaces as underscores (`snes9x.opt`, `mupen64plus-next.opt`, `beetle_psx_hw.opt`). It's created with the core's defaults the first time the core runs and updated when you change an option. You can also hand-edit it.
 
 Changing a core's internal resolution from the quick menu takes effect mid-game, at full sharpness. Hardware-rendered cores (Dolphin, etc.) rebuild their renderer for it, so expect a short pause (about a quarter second) at the switch.
 
@@ -762,12 +786,12 @@ To start over: delete `settings.ini` and re-launch.
 |---|---|
 | `[Paths]` | `user_data_dir` - relocate the whole user-data folder ([details](#putting-the-user-data-folder-somewhere-else)); `cheats_dir` |
 | `[Defaults]` | Fallback `core =` / `rom =` for the cartridge dispenser |
-| `[Frontend]` | Message time, fast-forward speed, rewind, Everdrive intro / keygen / screensaver |
+| `[Frontend]` | Message time, fast-forward speed and sound, rewind, Everdrive intro / keygen / screensaver |
 | `[State]` | Save state slot range, [resume with your VotV save](#resume-with-your-votv-save) (on/off, disk budget, delay) |
 | `[SRAM]` | Battery-save flush cadence (default 30 s) |
-| `[Runtime]` | `threaded_core`  |
+| `[Runtime]` | `threaded_core` (no longer used; every core runs in its own process) |
 | `[Audio]` | Sample rate, buffer sizes, master volume, resampler quality, audio effect (`.dsp`) |
-| `[Video]` | Graphics API for 3D cores: `auto`, `vulkan`, `d3d11` or `opengl` |
+| `[Video]` | Graphics API for 3D cores: `auto`, `vulkan`, `d3d11` or `opengl`; `gpu_priority` lets a game go first when it and VotV both need the graphics card |
 | `[Input]` | SDL or UE controller backend, stick deadzone, ignored controllers, rumble, motion sensors, held-controller motion |
 | `[Device]` | Advanced console hand-off timing |
 | `[Debug]` | On-screen message baking, FPS overlay, log detail |
@@ -782,7 +806,7 @@ To start over: delete `settings.ini` and re-launch.
 
 Hand edits to `settings.ini` are read when VotV starts. Changing anything on the quick menu's Settings page also re-reads the file.
 
-Once read, most settings apply straight away or on the next cart insert; the Settings page says which for each row. These need a VotV restart: `user_data_dir`, `threaded_core`, `gamepad_backend` and `gamepad_ignore`.
+Once read, most settings apply straight away or on the next cart insert; the Settings page says which for each row. Ejecting and re-inserting a cart doesn't re-read the file. These need a VotV restart: `user_data_dir`, `[Defaults]`, `[Device]`, `gamepad_backend` and `gamepad_ignore`. `stick_deadzone`, `rumble_strength` and `motion` also need a restart when edited by hand, but apply straight away from the Settings page.
 
 F10 toggles the FPS overlay live for the session without changing `settings.ini`.
 
@@ -824,8 +848,9 @@ Overall, I'm very pleased with the results, and I'm more than delighted to share
 
 Open `<votv>\WindowsNoEditor\VotV\Binaries\Win64\UE4SS.log` and search for `[VEmu]`. Common causes:
 - Missing core DLL - check `cores\` for the right filename. The mod logs `manifest: skipping <rom> -- no core for .<ext>` when nothing matches.
-- Missing BIOS - some cores need a BIOS in `system\`. Check `system\required_bios.txt` for the current state, and the [core's libretro docs page](https://docs.libretro.com/library/bios) for filenames.
-- ROM file not where the manifest scanner expected - try Layout 1 (loose at root) as a sanity check.
+- Missing BIOS - some cores need a BIOS in `system\`. Check `system\REQUIRED_BIOS.txt` for the current state, and the [core's libretro docs page](https://docs.libretro.com/library/bios) for filenames.
+- ROM file not where the manifest scanner expected - try Layout 1 (loose at root) as a sanity check. If that works, the system folder name probably isn't recognised (`n64` and `psx` aren't; use `nintendo_64` and `playstation`).
+- The popup says the core needs Vulkan or D3D11 - set **3D renderer** to Auto in F9 > Settings (`[Video] renderer = auto`).
 - For a core whose `.info` file isn't shipped: either drop the `.info` into `cores/info/` (grab it from the libretro buildbot alongside the DLL) or use a per-cart `core.txt`.
 
 **Black Screen / Audio but no video: Hybrid/dGPU**
@@ -836,9 +861,9 @@ Set libretrocpp_corehost.exe to 'High performance' in Windows -> System -> Displ
 
 Check your internet, then delete `<cart-folder>\cart_auto.failed` (or `<rom-stem>.cover_failed` for loose ROMs) and reload. Or just drop your own `cart.png` next to the ROM.
 
-**Cart shows up greyed-out in the dispenser.**
+**The game fails to start and the popup mentions a BIOS or firmware.**
 
-The system needs a BIOS that isn't in `system\`. Check `required_bios.txt` for the expected filename.
+The core needs a BIOS that isn't in `system\`. Check `REQUIRED_BIOS.txt` for the expected filename and where it goes, then eject and re-insert the cart.
 
 **Keys don't work in-emu but work in-game.**
 

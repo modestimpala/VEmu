@@ -1,3 +1,21 @@
+# 1.1.0
+
+## New
+
+### Graphics
+- **Smoother games.** About a quarter of some game's frames never reached the TV whenever VotV and the game ran at different frame rates, which showed up as stutter/micro hangs. Every single frame now gets through.
+- **Steadier picture.** When VotV and a game run at the same frame rate (VotV capped at 60, a 60 fps game), the game's frames are now timed to land between VotV's frames, so they stop alternating between a repeated and a skipped frame. Recovering from a hitch no longer makes the game sprint for a moment.
+- **Emulator GPU priority** (Settings > Emulator GPU priority, or `gpu_priority` in settings.ini). If a game slows down in heavy scenes while VotV stays smooth, Above normal or High lets the game's frames use the graphics card first. Normal by default.
+
+### Audio
+- **Less audio delay.** Sound now trails the picture by roughly 75 ms less (new defaults `pre_buffer_kb = 8`, `mixer_buffer_frames = 512`). If you hear crackling, raise `mixer_buffer_frames` to 1024 on the Settings page, or `pre_buffer_kb` to 16; UE4SS.log warns when the audio cushion runs dry.
+- **N64 sound no longer lags behind the picture.** Some N64 games (maybe other cores too) played their sound up to a second late; any build-up of old sound is now dropped after a second.
+- **Cleaner audio.** Volume above 100% no longer distorts, a momentarily late batch of audio no longer leaves a tiny gap, and recovering a console whose sound stopped no longer replays a burst of old audio.
+
+### Controllers
+- **Light gun keys don't take keys away from your games.** The gun's buttons (Enter, Y, G, B, I, N and U/H/J/K) only act while you're holding the gun, so those keys keep working normally in games the rest of the time.
+
+
 # 1.0.0
 
 - **F9 now opens the quick menu**, and **F10** shows or hides the FPS counter.
